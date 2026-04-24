@@ -8,3 +8,5 @@ pgdata-prod
 /generated/prisma
 pnpm-lock.yaml
 package-lock.json
+
+plans
