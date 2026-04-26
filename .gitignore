@@ -10,3 +10,9 @@ pnpm-lock.yaml
 package-lock.json
 
 plans
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
