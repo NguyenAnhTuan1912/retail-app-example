@@ -219,6 +219,10 @@ pnpm start:prod                        # Chạy production build
 docker compose -f docker-compose.dev.yml up -d      # Start DB
 docker compose -f docker-compose.dev.yml down        # Stop DB
 docker compose -f docker-compose.prod.yml up -d      # Start all (prod)
+
+# Docker — Remove all (containers, volumes, images)
+docker compose -f docker-compose.dev.yml down -v --rmi all
+docker compose -f docker-compose.prod.yml down -v --rmi all
 ```
 
 ## License
