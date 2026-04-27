@@ -26,10 +26,16 @@ MEMORY=256
 FUNCTIONS=(
   "listProducts"
   "getProduct"
+  "listCategories"
   "listOrders"
   "getOrder"
   "cancelOrder"
   "listReviews"
+  "getMe"
+  "getCart"
+  "addToCart"
+  "updateCartItem"
+  "removeCartItem"
 )
 
 echo "🔧 Building Lambda functions..."
