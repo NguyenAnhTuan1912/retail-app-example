@@ -1,0 +1,207 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─── Enums ───
+
+enum UserRole {
+  admin
+  seller
+  buyer
+}
+
+enum OrderStatus {
+  pending
+  processing
+  shipped
+  delivered
+  cancelled
+}
+
+// ─── Models ───
+
+model User {
+  id           String   @id @default(uuid()) @db.Uuid
+  username     String   @unique @db.VarChar(50)
+  email        String   @unique @db.VarChar(100)
+  passwordHash String   @map("password_hash")
+  fullName     String?  @map("full_name") @db.VarChar(100)
+  phoneNumber  String?  @map("phone_number") @db.VarChar(20)
+  role         UserRole @default(buyer)
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt    DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  addresses  Address[]
+  products   Product[]
+  cartItems  CartItem[]
+  orders     Order[]
+  reviews    Review[]
+  apiKeys    ApiKey[]
+
+  @@map("users")
+}
+
+model Address {
+  id            String  @id @default(uuid()) @db.Uuid
+  userId        String  @map("user_id") @db.Uuid
+  recipientName String  @map("recipient_name") @db.VarChar(100)
+  phoneNumber   String  @map("phone_number") @db.VarChar(20)
+  province      String  @db.VarChar(100)
+  district      String  @db.VarChar(100)
+  ward          String  @db.VarChar(100)
+  detailAddress String? @map("detail_address")
+  isDefault     Boolean @default(false) @map("is_default")
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("addresses")
+}
+
+model Category {
+  id       Int        @id @default(autoincrement())
+  name     String     @db.VarChar(100)
+  parentId Int?       @map("parent_id")
+  slug     String     @unique @db.VarChar(100)
+
+  parent   Category?  @relation("CategoryTree", fields: [parentId], references: [id])
+  children Category[] @relation("CategoryTree")
+  products Product[]
+
+  @@index([parentId])
+  @@map("categories")
+}
+
+model Product {
+  id            String   @id @default(uuid()) @db.Uuid
+  sellerId      String   @map("seller_id") @db.Uuid
+  categoryId    Int?     @map("category_id")
+  name          String   @db.VarChar(255)
+  description   String?
+  basePrice     Decimal  @map("base_price") @db.Decimal(12, 2)
+  stockQuantity Int      @default(0) @map("stock_quantity")
+  ratingAvg     Decimal  @default(0) @map("rating_avg") @db.Decimal(3, 2)
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt     DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  seller     User           @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  category   Category?      @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  images     ProductImage[]
+  cartItems  CartItem[]
+  orderItems OrderItem[]
+  reviews    Review[]
+
+  @@index([sellerId])
+  @@index([categoryId])
+  @@index([createdAt])
+  @@map("products")
+}
+
+model ProductImage {
+  id        String  @id @default(uuid()) @db.Uuid
+  productId String  @map("product_id") @db.Uuid
+  url       String
+  isMain    Boolean @default(false) @map("is_main")
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+  @@map("product_images")
+}
+
+model CartItem {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  productId String   @map("product_id") @db.Uuid
+  quantity  Int
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+  @@index([userId])
+  @@map("cart_items")
+}
+
+model Order {
+  id              String      @id @default(uuid()) @db.Uuid
+  buyerId         String      @map("buyer_id") @db.Uuid
+  totalAmount     Decimal     @map("total_amount") @db.Decimal(12, 2)
+  status          OrderStatus @default(pending)
+  shippingAddress String      @map("shipping_address")
+  createdAt       DateTime    @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt       DateTime    @updatedAt @map("updated_at") @db.Timestamptz
+
+  buyer        User              @relation(fields: [buyerId], references: [id])
+  items        OrderItem[]
+  cancellation OrderCancellation?
+
+  @@index([buyerId])
+  @@index([createdAt])
+  @@index([buyerId, createdAt])
+  @@map("orders")
+}
+
+model OrderItem {
+  id              String  @id @default(uuid()) @db.Uuid
+  orderId         String  @map("order_id") @db.Uuid
+  productId       String  @map("product_id") @db.Uuid
+  quantity        Int
+  priceAtPurchase Decimal @map("price_at_purchase") @db.Decimal(12, 2)
+
+  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id])
+
+  @@index([orderId])
+  @@index([productId])
+  @@map("order_items")
+}
+
+model Review {
+  id        String   @id @default(uuid()) @db.Uuid
+  productId String   @map("product_id") @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  rating    Int
+  comment   String?
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id])
+
+  @@unique([productId, userId])
+  @@index([productId])
+  @@index([createdAt])
+  @@map("reviews")
+}
+
+model OrderCancellation {
+  id          String   @id @default(uuid()) @db.Uuid
+  orderId     String   @unique @map("order_id") @db.Uuid
+  reason      String
+  cancelledAt DateTime @default(now()) @map("cancelled_at") @db.Timestamptz
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@map("order_cancellations")
+}
+
+model ApiKey {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @map("user_id") @db.Uuid
+  key       String    @unique @db.VarChar(64)
+  isActive  Boolean   @default(true) @map("is_active")
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  expiresAt DateTime? @map("expires_at") @db.Timestamptz
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([key])
+  @@index([userId])
+  @@map("api_keys")
+}
