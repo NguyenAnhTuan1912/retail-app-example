@@ -1,14 +1,14 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import HomePage from './pages/HomePage';
-import ProductPage from './pages/ProductPage';
+import { BrowserRouter } from 'react-router-dom';
+import { useAppRoutes } from './hooks/useAppRoutes';
+
+function AppRoutes() {
+  return useAppRoutes();
+}
 
 export default function App() {
   return (
     <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/products/:id" element={<ProductPage />} />
-      </Routes>
+      <AppRoutes />
     </BrowserRouter>
   );
 }

@@ -1,32 +1,22 @@
-import { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { api, type ProductDetail, type Review } from '../api';
-import { formatPrice, renderStars } from '../utils';
+import { useState } from "react";
+import { useParams, Link } from "react-router-dom";
+import { useProduct } from "../core/products/query";
+import { useReviews } from "../core/reviews/query";
+import { useAddToCart } from "../core/cart/query";
+import { formatPrice, renderStars } from "../utils";
+import { Button } from "@/components/ui/button";
 
 export default function ProductPage() {
   const { id } = useParams<{ id: string }>();
-  const [product, setProduct] = useState<ProductDetail | null>(null);
-  const [reviews, setReviews] = useState<Review[]>([]);
-  const [reviewCursor, setReviewCursor] = useState<string | null>(null);
+  const { data: product, isLoading } = useProduct(id!);
+  const { data: reviewData, hasNextPage, fetchNextPage } = useReviews(id!);
+  const addToCart = useAddToCart();
   const [selectedImage, setSelectedImage] = useState(0);
 
-  useEffect(() => {
-    if (!id) return;
-    api.getProduct(id).then(setProduct);
-    api.getReviews(id).then((res) => {
-      setReviews(res.data);
-      setReviewCursor(res.nextCursor);
-    });
-  }, [id]);
+  const reviews = reviewData?.pages.flatMap((p) => p.data) ?? [];
 
-  const loadMoreReviews = async () => {
-    if (!id || !reviewCursor) return;
-    const res = await api.getReviews(id, reviewCursor);
-    setReviews((prev) => [...prev, ...res.data]);
-    setReviewCursor(res.nextCursor);
-  };
-
-  if (!product) return <p className="p-8 text-center text-gray-500">Đang tải...</p>;
+  if (isLoading || !product)
+    return <p className="p-8 text-center text-gray-500">Đang tải...</p>;
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-8">
@@ -37,20 +27,26 @@ export default function ProductPage() {
       <div className="grid gap-8 md:grid-cols-2">
         {/* Images */}
         <div>
-          <img
-            src={product.images[selectedImage]?.url}
-            alt={product.name}
-            className="w-full rounded-lg object-cover"
-          />
+          <div>
+            <img
+              src={product.images[selectedImage]?.url}
+              alt={product.name}
+              className="w-full aspect-square rounded-lg object-center object-cover"
+            />
+          </div>
           {product.images.length > 1 && (
             <div className="mt-3 flex gap-2">
               {product.images.map((img, i) => (
                 <button
                   key={i}
                   onClick={() => setSelectedImage(i)}
-                  className={`h-16 w-16 overflow-hidden rounded border-2 ${i === selectedImage ? 'border-blue-600' : 'border-gray-200'}`}
+                  className={`h-16 w-16 overflow-hidden rounded border-2 ${i === selectedImage ? "border-blue-600" : "border-gray-200"}`}
                 >
-                  <img src={img.url} alt="" className="h-full w-full object-cover" />
+                  <img
+                    src={img.url}
+                    alt=""
+                    className="h-full w-full object-cover"
+                  />
                 </button>
               ))}
             </div>
@@ -64,7 +60,7 @@ export default function ProductPage() {
             {formatPrice(product.basePrice)}
           </p>
           <div className="mt-2 text-yellow-500">
-            {renderStars(Number(product.ratingAvg))}{' '}
+            {renderStars(Number(product.ratingAvg))}{" "}
             <span className="text-sm text-gray-500">({product.ratingAvg})</span>
           </div>
           <p className="mt-4 text-gray-600">{product.description}</p>
@@ -73,12 +69,19 @@ export default function ProductPage() {
             {product.category && <p>Danh mục: {product.category.name}</p>}
             <p>Kho: {product.stockQuantity}</p>
           </div>
+          <Button
+            className="mt-4 w-full"
+            onClick={() => addToCart.mutate({ productId: product.id })}
+            disabled={addToCart.isPending}
+          >
+            {addToCart.isPending ? 'Đang thêm...' : '🛒 Thêm vào giỏ hàng'}
+          </Button>
         </div>
       </div>
 
       {/* Reviews */}
       <div className="mt-10">
-        <h2 className="mb-4 text-xl font-bold">Đánh giá ({reviews.length})</h2>
+        <h2 className="mb-4 text-xl font-bold">Đánh giá ({product.reviewCount})</h2>
         {reviews.length === 0 && (
           <p className="text-gray-500">Chưa có đánh giá nào.</p>
         )}
@@ -91,14 +94,14 @@ export default function ProductPage() {
               </div>
               {r.comment && <p className="mt-2 text-gray-600">{r.comment}</p>}
               <p className="mt-1 text-xs text-gray-400">
-                {new Date(r.createdAt).toLocaleDateString('vi-VN')}
+                {new Date(r.createdAt).toLocaleDateString("vi-VN")}
               </p>
             </div>
           ))}
         </div>
-        {reviewCursor && (
+        {hasNextPage && (
           <button
-            onClick={loadMoreReviews}
+            onClick={() => fetchNextPage()}
             className="mt-4 rounded-lg bg-gray-100 px-4 py-2 text-sm hover:bg-gray-200"
           >
             Xem thêm đánh giá
