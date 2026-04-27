@@ -1,8 +1,12 @@
 import { callApi, success, error, formatCurrency } from './shared';
 
-export const handler = async () => {
+interface Event {
+  apiKey: string;
+}
+
+export const handler = async (event: Event) => {
   try {
-    const items = await callApi('/cart');
+    const items = await callApi(event.apiKey, '/cart');
 
     if (items.length === 0) return success('Giỏ hàng trống.');
 

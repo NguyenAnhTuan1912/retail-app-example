@@ -1,13 +1,14 @@
 import { callApiWithBody, success, error, formatCurrency } from './shared';
 
 interface Event {
+  apiKey: string;
   orderId: string;
   reason: string;
 }
 
 export const handler = async (event: Event) => {
   try {
-    const o = await callApiWithBody('DELETE', `/orders/${event.orderId}`, {
+    const o = await callApiWithBody(event.apiKey, 'DELETE', `/orders/${event.orderId}`, {
       reason: event.reason,
     });
 

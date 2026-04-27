@@ -1,6 +1,7 @@
 import { callApi, success, error } from './shared';
 
 interface Event {
+  apiKey: string;
   productId: string;
   limit?: number;
   cursor?: string;
@@ -12,7 +13,7 @@ export const handler = async (event: Event) => {
     if (event.limit) params.set('limit', String(event.limit));
     if (event.cursor) params.set('cursor', event.cursor);
 
-    const data = await callApi(`/reviews?${params}`);
+    const data = await callApi(event.apiKey, `/reviews?${params}`);
 
     if (!data.data.length)
       return success('Chưa có đánh giá nào cho sản phẩm này.');

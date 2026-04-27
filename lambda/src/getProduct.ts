@@ -1,12 +1,13 @@
 import { callApi, success, error, formatCurrency } from './shared';
 
 interface Event {
+  apiKey: string;
   productId: string;
 }
 
 export const handler = async (event: Event) => {
   try {
-    const p = await callApi(`/products/${event.productId}`);
+    const p = await callApi(event.apiKey, `/products/${event.productId}`);
 
     const images =
       p.images

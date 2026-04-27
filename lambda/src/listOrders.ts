@@ -1,6 +1,7 @@
 import { callApi, success, error, formatCurrency } from './shared';
 
 interface Event {
+  apiKey: string;
   userId: string;
   dateFrom?: string;
   dateTo?: string;
@@ -18,7 +19,7 @@ export const handler = async (event: Event) => {
     if (event.limit) params.set('limit', String(event.limit));
     if (event.cursor) params.set('cursor', event.cursor);
 
-    const data = await callApi(`/orders?${params}`);
+    const data = await callApi(event.apiKey, `/orders?${params}`);
 
     if (!data.data.length) return success('Không tìm thấy đơn hàng nào.');
 

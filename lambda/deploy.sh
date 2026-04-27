@@ -17,7 +17,6 @@ fi
 
 REGION="${AWS_REGION:-ap-southeast-1}"
 API_BASE_URL="${API_BASE_URL:?❌ Set API_BASE_URL env var}"
-API_KEY="${API_KEY:?❌ Set API_KEY env var}"
 ROLE_NAME="demo-retail-lambda-role"
 RUNTIME="nodejs22.x"
 TIMEOUT=30
@@ -105,7 +104,7 @@ for FUNC in "${FUNCTIONS[@]}"; do
       --handler "$HANDLER" \
       --timeout "$TIMEOUT" \
       --memory-size "$MEMORY" \
-      --environment "Variables={API_BASE_URL=$API_BASE_URL,API_KEY=$API_KEY}" \
+      --environment "Variables={API_BASE_URL=$API_BASE_URL}" \
       --profile "$PROFILE" \
       --region "$REGION" \
       --no-cli-pager > /dev/null 2>&1 || true
@@ -121,7 +120,7 @@ for FUNC in "${FUNCTIONS[@]}"; do
       --zip-file fileb://lambda.zip \
       --timeout "$TIMEOUT" \
       --memory-size "$MEMORY" \
-      --environment "Variables={API_BASE_URL=$API_BASE_URL,API_KEY=$API_KEY}" \
+      --environment "Variables={API_BASE_URL=$API_BASE_URL}" \
       --profile "$PROFILE" \
       --region "$REGION" \
       --query 'FunctionArn' --output text)

@@ -1,8 +1,12 @@
 import { callApi, success, error } from './shared';
 
-export const handler = async () => {
+interface Event {
+  apiKey: string;
+}
+
+export const handler = async (event: Event) => {
   try {
-    const cats = await callApi('/products/categories');
+    const cats = await callApi(event.apiKey, '/products/categories');
 
     const parents = cats.filter((c: any) => !c.parentId);
     const lines = parents.map((p: any) => {

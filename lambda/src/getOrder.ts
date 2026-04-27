@@ -1,12 +1,13 @@
 import { callApi, success, error, formatCurrency } from './shared';
 
 interface Event {
+  apiKey: string;
   orderId: string;
 }
 
 export const handler = async (event: Event) => {
   try {
-    const o = await callApi(`/orders/${event.orderId}`);
+    const o = await callApi(event.apiKey, `/orders/${event.orderId}`);
 
     const items = o.items
       .map(

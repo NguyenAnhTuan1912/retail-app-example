@@ -1,8 +1,12 @@
 import { callApi, success, error } from './shared';
 
-export const handler = async () => {
+interface Event {
+  apiKey: string;
+}
+
+export const handler = async (event: Event) => {
   try {
-    const user = await callApi('/me');
+    const user = await callApi(event.apiKey, '/me');
 
     const result = [
       `👤 Thông tin tài khoản:`,

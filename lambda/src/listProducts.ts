@@ -1,6 +1,7 @@
 import { callApi, success, error, formatCurrency } from './shared';
 
 interface Event {
+  apiKey: string;
   limit?: number;
   cursor?: string;
   search?: string;
@@ -20,7 +21,7 @@ export const handler = async (event: Event) => {
     if (event.priceTo !== undefined) params.set('priceTo', String(event.priceTo));
 
     const qs = params.toString();
-    const data = await callApi(`/products${qs ? `?${qs}` : ''}`);
+    const data = await callApi(event.apiKey, `/products${qs ? `?${qs}` : ''}`);
 
     const lines = data.data.map(
       (p: any, i: number) =>
