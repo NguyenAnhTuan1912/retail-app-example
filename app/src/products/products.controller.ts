@@ -15,6 +15,12 @@ export class ProductsController {
     return this.productsService.findAll(dto);
   }
 
+  @Get('categories')
+  @ApiOperation({ summary: 'Danh sách danh mục' })
+  getCategories() {
+    return this.productsService.getCategories();
+  }
+
   @Get(':productId')
   @ApiOperation({ summary: 'Chi tiết sản phẩm' })
   findOne(@Param('productId', ParseUUIDPipe) productId: string): Promise<ProductDetailResponseDto> {
