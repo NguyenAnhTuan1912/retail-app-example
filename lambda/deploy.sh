@@ -82,7 +82,9 @@ echo ""
 echo "🚀 Deploying Lambda functions..."
 echo "─────────────────────────────────────"
 
-declare -A ARNS
+TAGS="Owner=Nguyen Anh Tuan,Project=ECVBot,CreatedBy=Script"
+
+declare ARNS=""
 
 for FUNC in "${FUNCTIONS[@]}"; do
   FUNC_NAME="demo-retail-${FUNC}"
@@ -121,6 +123,7 @@ for FUNC in "${FUNCTIONS[@]}"; do
       --timeout "$TIMEOUT" \
       --memory-size "$MEMORY" \
       --environment "Variables={API_BASE_URL=$API_BASE_URL}" \
+      --tags "$TAGS" \
       --profile "$PROFILE" \
       --region "$REGION" \
       --query 'FunctionArn' --output text)
@@ -128,7 +131,14 @@ for FUNC in "${FUNCTIONS[@]}"; do
     echo "  ✅ Created: $FUNC_NAME"
   fi
 
-  ARNS[$FUNC]="$ARN"
+  # Ensure tags (for both create and update)
+  aws lambda tag-resource \
+    --resource "$ARN" \
+    --tags "$TAGS" \
+    --profile "$PROFILE" \
+    --region "$REGION" 2>/dev/null || true
+
+  ARNS="${ARNS}  ${FUNC}: ${ARN}\n"
 done
 
 # ─── Output ───
@@ -136,7 +146,5 @@ echo ""
 echo "─────────────────────────────────────"
 echo "🎉 Deploy completed! Lambda ARNs:"
 echo "─────────────────────────────────────"
-for FUNC in "${FUNCTIONS[@]}"; do
-  echo "  ${FUNC}: ${ARNS[$FUNC]}"
-done
+printf "$ARNS"
 echo "─────────────────────────────────────"
