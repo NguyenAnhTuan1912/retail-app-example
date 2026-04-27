@@ -221,6 +221,20 @@ curl "http://localhost:19000/reviews?productId=<product-id>&limit=10" \
   -H "X-API-Key: <your-api-key>"
 ```
 
+## Lambda (Chatbot Tools)
+
+```bash
+cd lambda
+
+# Deploy toàn bộ Lambda functions
+API_BASE_URL="https://<backend-url>" ./deploy.sh --profile <aws-profile>
+
+# Update biến môi trường cho toàn bộ functions
+API_BASE_URL="https://<backend-url>" ./update-functions.sh --profile <aws-profile>
+```
+
+> Xem mô tả chi tiết từng function trong `lambda/TOOLS.md`.
+
 ## Useful Commands
 
 ```bash
