@@ -1,6 +1,0 @@
-node_modules
-dist
-pgdata-dev
-pgdata-prod
-.git
-.env*

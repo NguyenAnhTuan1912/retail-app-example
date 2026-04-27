@@ -9,10 +9,15 @@ services:
       - ./pgdata-prod:/var/lib/postgresql/data
 
   server:
-    build: .
-    ports:
-      - "19000:19000"
+    build: ./app
     env_file:
-      - .env.prod
+      - ./app/.env.prod
     depends_on:
       - db
+
+  web:
+    build: ./web
+    ports:
+      - "80:80"
+    depends_on:
+      - server

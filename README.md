@@ -5,49 +5,54 @@
 ## Tech Stack
 
 - **Backend:** NestJS (TypeScript)
+- **Frontend:** React + Vite + TailwindCSS
 - **ORM:** Prisma 7 (với Driver Adapter `@prisma/adapter-pg`)
 - **Database:** PostgreSQL 16
 - **Auth:** API Key (`X-API-Key` header)
 - **Docs:** Swagger UI (`/api-docs`)
-- **Container:** Docker Compose
+- **Container:** Docker Compose + Nginx
 
 ## Cấu trúc dự án
 
 ```
-src/
-├── main.ts                          # Entry point (Swagger, ValidationPipe, port 19000)
-├── app.module.ts                    # Root module
+app/
+├── src/
+│   ├── main.ts                          # Entry point (Swagger, ValidationPipe, port 19000)
+│   ├── app.module.ts                    # Root module
+│   ├── prisma/
+│   │   ├── prisma.module.ts             # Global Prisma module
+│   │   └── prisma.service.ts            # PrismaClient wrapper (Driver Adapter)
+│   ├── auth/
+│   │   ├── auth.module.ts               # Auth module (global guards)
+│   │   ├── auth.service.ts              # API Key validation
+│   │   ├── auth.guard.ts                # AuthGuard — đọc X-API-Key header
+│   │   ├── roles.guard.ts               # RolesGuard — phân quyền theo role
+│   │   ├── roles.decorator.ts           # @Roles() decorator
+│   │   └── current-user.decorator.ts    # @CurrentUser() decorator
+│   ├── products/
+│   ├── orders/
+│   └── reviews/
 ├── prisma/
-│   ├── prisma.module.ts             # Global Prisma module
-│   └── prisma.service.ts            # PrismaClient wrapper (Driver Adapter)
-├── auth/
-│   ├── auth.module.ts               # Auth module (global guards)
-│   ├── auth.service.ts              # API Key validation
-│   ├── auth.guard.ts                # AuthGuard — đọc X-API-Key header
-│   ├── roles.guard.ts               # RolesGuard — phân quyền theo role
-│   ├── roles.decorator.ts           # @Roles() decorator
-│   └── current-user.decorator.ts    # @CurrentUser() decorator
-├── products/
-│   ├── products.module.ts
-│   ├── products.controller.ts
-│   ├── products.service.ts
-│   └── dto/products.dto.ts
-├── orders/
-│   ├── orders.module.ts
-│   ├── orders.controller.ts
-│   ├── orders.service.ts
-│   └── dto/orders.dto.ts
-└── reviews/
-    ├── reviews.module.ts
-    ├── reviews.controller.ts
-    ├── reviews.service.ts
-    └── dto/reviews.dto.ts
+│   ├── schema.prisma                    # Database schema
+│   └── migrations/
+├── Dockerfile
+└── package.json
 
-prisma/
-├── schema.prisma                    # Database schema
-└── migrations/                      # Migration files
+web/
+├── src/
+│   ├── main.tsx                         # Entry point
+│   ├── App.tsx                          # Router
+│   ├── api.ts                           # API client
+│   ├── pages/
+│   │   ├── HomePage.tsx                 # Danh sách sản phẩm
+│   │   └── ProductPage.tsx              # Chi tiết + reviews
+│   └── components/
+│       └── ProductCard.tsx
+├── nginx.conf                           # Nginx: SPA + reverse proxy /api
+├── Dockerfile
+└── package.json
 
-docker-compose.dev.yml               # Dev: chỉ DB container
+docker-compose.dev.yml                   # Dev: chỉ DB container
 docker-compose.prod.yml              # Prod: DB + server containers
 Dockerfile                           # Multi-stage build
 ```
@@ -96,22 +101,36 @@ categories (self-ref) ──< products
 
 ```bash
 # 1. Cài dependencies
-pnpm install
+cd app && pnpm install
+cd web && pnpm install
 
 # 2. Khởi động PostgreSQL container
 docker compose -f docker-compose.dev.yml up -d
 
-# 3. Chạy migration
+# 3. Chạy migration + seed
+cd app
 npx prisma migrate dev
+npx tsx prisma/seed.ts
 
-# 4. Chạy server (port 19000)
+# 4. Chạy backend (port 19000)
 pnpm start:dev
+
+# 5. Chạy frontend (port 3000, proxy /api → backend)
+cd web
+pnpm dev
 ```
 
 ### Prod environment
 
 ```bash
 docker compose -f docker-compose.prod.yml up -d --build
+
+# Chạy migration + seed (từ local, cần expose port 5432 hoặc set DATABASE_URL)
+cd app
+./scripts/migrate-and-seed.sh
+
+# Hoặc chỉ định DATABASE_URL
+DATABASE_URL="postgresql://retail:retail123@<host>:5432/retail_db" ./scripts/migrate-and-seed.sh
 ```
 
 ### Swagger UI
