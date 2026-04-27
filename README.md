@@ -110,6 +110,7 @@ docker compose -f docker-compose.dev.yml up -d
 # 3. Chạy migration + seed
 cd app
 npx prisma migrate dev
+npx prisma generate
 npx tsx prisma/seed.ts
 
 # 4. Chạy backend (port 19000)
