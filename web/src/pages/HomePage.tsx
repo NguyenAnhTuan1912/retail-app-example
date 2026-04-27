@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { useProducts, useCategories } from "../core/products/query";
 import type { ProductFilters } from "../core/products/api";
-import { ProductCard } from "../components/ProductCard";
+import { ProductCard } from "../components/product-card";
 import { Input } from "@/components/ui/input";
 import {
   Select,

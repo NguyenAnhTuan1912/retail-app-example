@@ -44,10 +44,12 @@ export default function GlobalHeaderLayout() {
 
           <div className="flex items-center gap-4">
             {/* Cart */}
-            <Link to="/cart" className="relative">
+            <Link to="/cart" className="relative cursor-pointer">
               <span className="text-xl">🛒</span>
               {cartCount > 0 && (
-                <Badge className="absolute -top-2 -right-3 h-5 min-w-5 justify-center rounded-full px-1 text-xs">
+                <Badge
+                  className="absolute -top-2 -right-3 h-5 min-w-5 justify-center rounded-full px-1 text-xs bg-red-500"
+                >
                   {cartCount}
                 </Badge>
               )}
@@ -56,10 +58,12 @@ export default function GlobalHeaderLayout() {
             {/* Orders dropdown */}
             <Popover>
               <PopoverTrigger>
-                <button className="relative">
+                <button className="relative cursor-pointer">
                   <span className="text-xl">📦</span>
                   {orders.length > 0 && (
-                    <Badge className="absolute -top-2 -right-3 h-5 min-w-5 justify-center rounded-full px-1 text-xs">
+                    <Badge
+                      className="absolute -top-2 -right-3 h-5 min-w-5 justify-center rounded-full px-1 text-xs bg-red-500"
+                    >
                       {orders.length}
                     </Badge>
                   )}
