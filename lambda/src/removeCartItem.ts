@@ -1,15 +1,17 @@
-import { callApiWithBody, success, error } from './shared';
+import { callApiWithBody, successWithData, error } from './shared';
 
 interface Event {
-  apiKey: string;
+  user?: { userId: string };
   itemId: string;
 }
 
 export const handler = async (event: Event) => {
   try {
-    const items = await callApiWithBody(event.apiKey, 'DELETE', `/cart/${event.itemId}`, {});
+    const items = await callApiWithBody('DELETE', `/cart/${event.itemId}`, {
+      userId: event.user?.userId,
+    });
 
-    return success(`Đã xoá khỏi giỏ hàng. Giỏ hàng hiện có ${items.length} sản phẩm.`);
+    return successWithData(`Đã xoá khỏi giỏ hàng. Giỏ hàng hiện có ${items.length} sản phẩm.`, items);
   } catch (e) {
     return error(e);
   }

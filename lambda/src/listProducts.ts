@@ -1,7 +1,6 @@
-import { callApi, success, error, formatCurrency } from './shared';
+import { callApi, successWithData, error, formatCurrency } from './shared';
 
 interface Event {
-  apiKey: string;
   limit?: number;
   cursor?: string;
   search?: string;
@@ -21,18 +20,18 @@ export const handler = async (event: Event) => {
     if (event.priceTo !== undefined) params.set('priceTo', String(event.priceTo));
 
     const qs = params.toString();
-    const data = await callApi(event.apiKey, `/products${qs ? `?${qs}` : ''}`);
+    const data = await callApi(`/products${qs ? `?${qs}` : ''}`);
 
     const lines = data.data.map(
       (p: any, i: number) =>
         `${i + 1}. ${p.name} — ${formatCurrency(p.basePrice)} | ⭐${p.ratingAvg} | Kho: ${p.stockQuantity}`,
     );
 
-    let result = `Danh sách sản phẩm (${data.data.length} kết quả):\n\n${lines.join('\n')}`;
+    let text = `Danh sách sản phẩm (${data.data.length} kết quả):\n\n${lines.join('\n')}`;
     if (data.nextCursor)
-      result += `\n\n[Trang tiếp: cursor=${data.nextCursor}]`;
+      text += `\n\n[Trang tiếp: cursor=${data.nextCursor}]`;
 
-    return success(result);
+    return successWithData(text, data);
   } catch (e) {
     return error(e);
   }

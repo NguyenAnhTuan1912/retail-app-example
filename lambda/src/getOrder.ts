@@ -1,13 +1,12 @@
-import { callApi, success, error, formatCurrency } from './shared';
+import { callApi, successWithData, error, formatCurrency } from './shared';
 
 interface Event {
-  apiKey: string;
   orderId: string;
 }
 
 export const handler = async (event: Event) => {
   try {
-    const o = await callApi(event.apiKey, `/orders/${event.orderId}`);
+    const o = await callApi(`/orders/${event.orderId}`);
 
     const items = o.items
       .map(
@@ -32,7 +31,7 @@ export const handler = async (event: Event) => {
       );
     }
 
-    return success(lines.join('\n'));
+    return successWithData(lines.join('\n'), o);
   } catch (e) {
     return error(e);
   }

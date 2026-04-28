@@ -1,7 +1,6 @@
-import { callApi, success, error } from './shared';
+import { callApi, successWithData, error } from './shared';
 
 interface Event {
-  apiKey: string;
   productId: string;
   limit?: number;
   cursor?: string;
@@ -13,21 +12,21 @@ export const handler = async (event: Event) => {
     if (event.limit) params.set('limit', String(event.limit));
     if (event.cursor) params.set('cursor', event.cursor);
 
-    const data = await callApi(event.apiKey, `/reviews?${params}`);
+    const data = await callApi(`/reviews?${params}`);
 
     if (!data.data.length)
-      return success('Chưa có đánh giá nào cho sản phẩm này.');
+      return successWithData('Chưa có đánh giá nào cho sản phẩm này.', data);
 
     const lines = data.data.map(
       (r: any, i: number) =>
         `${i + 1}. ⭐${r.rating} — ${r.user.fullName || r.user.username}\n   "${r.comment || 'Không có bình luận'}"\n   ${new Date(r.createdAt).toLocaleDateString('vi-VN')}`,
     );
 
-    let result = `Đánh giá sản phẩm (${data.data.length} kết quả):\n\n${lines.join('\n\n')}`;
+    let text = `Đánh giá sản phẩm (${data.data.length} kết quả):\n\n${lines.join('\n\n')}`;
     if (data.nextCursor)
-      result += `\n\n[Trang tiếp: cursor=${data.nextCursor}]`;
+      text += `\n\n[Trang tiếp: cursor=${data.nextCursor}]`;
 
-    return success(result);
+    return successWithData(text, data);
   } catch (e) {
     return error(e);
   }

@@ -1,14 +1,15 @@
-import { callApi, success, error, formatCurrency } from './shared';
+import { callApi, successWithData, error, formatCurrency } from './shared';
 
 interface Event {
-  apiKey: string;
+  user?: { userId: string };
 }
 
 export const handler = async (event: Event) => {
   try {
-    const items = await callApi(event.apiKey, '/cart');
+    const qs = event.user?.userId ? `?userId=${event.user.userId}` : '';
+    const items = await callApi(`/cart${qs}`);
 
-    if (items.length === 0) return success('Giỏ hàng trống.');
+    if (items.length === 0) return successWithData('Giỏ hàng trống.', []);
 
     const lines = items.map(
       (item: any, i: number) =>
@@ -20,9 +21,9 @@ export const handler = async (event: Event) => {
       0,
     );
 
-    return success(
-      `🛒 Giỏ hàng (${items.length} sản phẩm):\n\n${lines.join('\n')}\n\nTổng cộng: ${formatCurrency(total)}`,
-    );
+    const text = `🛒 Giỏ hàng (${items.length} sản phẩm):\n\n${lines.join('\n')}\n\nTổng cộng: ${formatCurrency(total)}`;
+
+    return successWithData(text, items);
   } catch (e) {
     return error(e);
   }

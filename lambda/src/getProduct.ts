@@ -1,20 +1,14 @@
-import { callApi, success, error, formatCurrency } from './shared';
+import { callApi, successWithData, error, formatCurrency } from './shared';
 
 interface Event {
-  apiKey: string;
   productId: string;
 }
 
 export const handler = async (event: Event) => {
   try {
-    const p = await callApi(event.apiKey, `/products/${event.productId}`);
+    const p = await callApi(`/products/${event.productId}`);
 
-    const images =
-      p.images
-        ?.map((img: any) => `  - ${img.url}${img.isMain ? ' (ảnh chính)' : ''}`)
-        .join('\n') || '  Không có';
-
-    const result = [
+    const text = [
       `Sản phẩm: ${p.name}`,
       `Giá: ${formatCurrency(p.basePrice)}`,
       `Đánh giá: ⭐${p.ratingAvg}`,
@@ -22,11 +16,9 @@ export const handler = async (event: Event) => {
       `Danh mục: ${p.category?.name || 'Không có'}`,
       `Người bán: ${p.seller?.fullName || p.seller?.username}`,
       `Mô tả: ${p.description || 'Không có'}`,
-      `Hình ảnh:\n${images}`,
-      `Ngày đăng: ${new Date(p.createdAt).toLocaleDateString('vi-VN')}`,
     ].join('\n');
 
-    return success(result);
+    return successWithData(text, p);
   } catch (e) {
     return error(e);
   }

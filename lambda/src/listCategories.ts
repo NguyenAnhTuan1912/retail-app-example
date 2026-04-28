@@ -1,12 +1,8 @@
-import { callApi, success, error } from './shared';
+import { callApi, successWithData, error } from './shared';
 
-interface Event {
-  apiKey: string;
-}
-
-export const handler = async (event: Event) => {
+export const handler = async () => {
   try {
-    const cats = await callApi(event.apiKey, '/products/categories');
+    const cats = await callApi('/products/categories');
 
     const parents = cats.filter((c: any) => !c.parentId);
     const lines = parents.map((p: any) => {
@@ -15,7 +11,7 @@ export const handler = async (event: Event) => {
       return `📁 ${p.name}:\n${childList}`;
     });
 
-    return success(`Danh mục sản phẩm:\n\n${lines.join('\n\n')}`);
+    return successWithData(`Danh mục sản phẩm:\n\n${lines.join('\n\n')}`, cats);
   } catch (e) {
     return error(e);
   }

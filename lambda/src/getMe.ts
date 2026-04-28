@@ -1,14 +1,15 @@
-import { callApi, success, error } from './shared';
+import { callApi, successWithData, error } from './shared';
 
 interface Event {
-  apiKey: string;
+  user?: { userId: string };
 }
 
 export const handler = async (event: Event) => {
   try {
-    const user = await callApi(event.apiKey, '/me');
+    const path = event.user?.userId ? `/users/${event.user.userId}` : '/me';
+    const user = await callApi(path);
 
-    const result = [
+    const text = [
       `👤 Thông tin tài khoản:`,
       `Tên: ${user.fullName ?? user.username}`,
       `Email: ${user.email}`,
@@ -17,7 +18,7 @@ export const handler = async (event: Event) => {
       `User ID: ${user.id}`,
     ].join('\n');
 
-    return success(result);
+    return successWithData(text, user);
   } catch (e) {
     return error(e);
   }

@@ -1,18 +1,19 @@
-import { callApiWithBody, success, error } from './shared';
+import { callApiWithBody, successWithData, error } from './shared';
 
 interface Event {
-  apiKey: string;
+  user?: { userId: string };
   itemId: string;
   quantity: number;
 }
 
 export const handler = async (event: Event) => {
   try {
-    const items = await callApiWithBody(event.apiKey, 'PATCH', `/cart/${event.itemId}`, {
+    const items = await callApiWithBody('PATCH', `/cart/${event.itemId}`, {
+      userId: event.user?.userId,
       quantity: event.quantity,
     });
 
-    return success(`Đã cập nhật giỏ hàng. Giỏ hàng hiện có ${items.length} sản phẩm.`);
+    return successWithData(`Đã cập nhật giỏ hàng. Giỏ hàng hiện có ${items.length} sản phẩm.`, items);
   } catch (e) {
     return error(e);
   }

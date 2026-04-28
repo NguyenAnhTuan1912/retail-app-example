@@ -1,18 +1,17 @@
-import { callApiWithBody, success, error, formatCurrency } from './shared';
+import { callApiWithBody, successWithData, error, formatCurrency } from './shared';
 
 interface Event {
-  apiKey: string;
   orderId: string;
   reason: string;
 }
 
 export const handler = async (event: Event) => {
   try {
-    const o = await callApiWithBody(event.apiKey, 'DELETE', `/orders/${event.orderId}`, {
+    const o = await callApiWithBody('DELETE', `/orders/${event.orderId}`, {
       reason: event.reason,
     });
 
-    const result = [
+    const text = [
       `Đã huỷ đơn hàng thành công.`,
       `Đơn hàng: ${o.id}`,
       `Trạng thái: ${o.status.toUpperCase()}`,
@@ -20,7 +19,7 @@ export const handler = async (event: Event) => {
       `Lý do huỷ: ${event.reason}`,
     ].join('\n');
 
-    return success(result);
+    return successWithData(text, o);
   } catch (e) {
     return error(e);
   }
