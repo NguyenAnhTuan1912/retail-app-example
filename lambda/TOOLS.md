@@ -1,89 +1,114 @@
-# Lambda Functions — Tool Descriptions
+# Lambda Functions — Tool Definitions
 
-Mô tả cho từng Lambda function, dùng để gắn vào chatbot tool definitions.
+Tool descriptions for chatbot integration.
 
-> **Lưu ý:** Tất cả functions đều yêu cầu `apiKey` (string, required) — API key của user, do LLM truyền vào.
+> **Auth:** API Key is configured via Lambda environment variable, not passed by LLM.
+> **User context:** `user.userId` is automatically injected by the system, not passed by LLM.
+> **UI rendering:** Functions marked `isUIRenderer: true` return `{ text, data }` — `text` for LLM to read, `data` (raw object) for frontend to render UI.
 
 ## listProducts
-Tìm kiếm và liệt kê danh sách sản phẩm. Hỗ trợ tìm theo tên, lọc theo danh mục và khoảng giá, phân trang bằng cursor.
+
+Search and list products. Supports keyword search, category and price filtering, cursor-based pagination.
+
 - **Parameters:**
-  - `apiKey` (string, required): API key của user
-  - `search` (string, optional): Từ khoá tìm kiếm theo tên sản phẩm
-  - `categoryId` (number, optional): ID danh mục để lọc (lấy từ listCategories)
-  - `priceFrom` (number, optional): Giá tối thiểu (VNĐ)
-  - `priceTo` (number, optional): Giá tối đa (VNĐ)
-  - `limit` (number, optional): Số sản phẩm trả về (mặc định 20, tối đa 100)
-  - `cursor` (string, optional): Cursor để lấy trang tiếp theo
+  - `search` (string, optional): Search keyword by product name
+  - `categoryId` (number, optional): Category ID to filter (get from listCategories)
+  - `priceFrom` (number, optional): Minimum price (VND)
+  - `priceTo` (number, optional): Maximum price (VND)
+  - `limit` (number, optional): Number of products to return (default 20, max 100)
+  - `cursor` (string, optional): Cursor for next page
 
 ## getProduct
-Lấy thông tin chi tiết của một sản phẩm, bao gồm mô tả, giá, đánh giá, hình ảnh, người bán và danh mục.
+
+Get detailed information of a product including description, price, rating, images, seller and category.
+
 - **Parameters:**
-  - `apiKey` (string, required): API key của user
-  - `productId` (string, required): ID của sản phẩm (UUID)
+  - `productId` (string, required): Product ID (UUID)
 
 ## listCategories
-Liệt kê tất cả danh mục sản phẩm, bao gồm danh mục cha và danh mục con. Dùng để lấy categoryId cho việc lọc sản phẩm.
-- **Parameters:**
-  - `apiKey` (string, required): API key của user
+
+List all product categories including parent and child categories. Use to get categoryId for filtering products.
+
+- **Parameters:** None
 
 ## listOrders
-Liệt kê danh sách đơn hàng của một user. Hỗ trợ lọc theo khoảng thời gian và tìm kiếm theo tên sản phẩm trong đơn.
+
+List orders for the current user. Supports date range filtering and search by product name within orders.
+
 - **Parameters:**
-  - `apiKey` (string, required): API key của user
-  - `userId` (string, required): ID của user (UUID, lấy từ getMe)
-  - `dateFrom` (string, optional): Ngày bắt đầu (ISO 8601, mặc định đầu tháng hiện tại)
-  - `dateTo` (string, optional): Ngày kết thúc (ISO 8601, mặc định hiện tại)
-  - `search` (string, optional): Tìm theo tên sản phẩm trong đơn hàng
-  - `limit` (number, optional): Số đơn hàng trả về (mặc định 20)
-  - `cursor` (string, optional): Cursor để lấy trang tiếp theo
+  - `dateFrom` (string, optional): Start date (ISO 8601, defaults to first day of current month)
+  - `dateTo` (string, optional): End date (ISO 8601, defaults to now)
+  - `search` (string, optional): Search by product name in orders
+  - `limit` (number, optional): Number of orders to return (default 20)
+  - `cursor` (string, optional): Cursor for next page
 
 ## getOrder
-Lấy thông tin chi tiết của một đơn hàng, bao gồm danh sách sản phẩm, trạng thái, địa chỉ giao hàng và thông tin huỷ (nếu có).
+
+Get order details including product list, status, shipping address and cancellation info (if any).
+
+- **isUIRenderer:** true
 - **Parameters:**
-  - `apiKey` (string, required): API key của user
-  - `orderId` (string, required): ID của đơn hàng (UUID)
+  - `orderId` (string, required): Order ID (UUID)
 
 ## cancelOrder
-Huỷ một đơn hàng. Chỉ cho phép huỷ trong vòng 7 ngày kể từ khi đặt hàng.
+
+Cancel an order. Only allowed within 7 days of order creation.
+
 - **Parameters:**
-  - `apiKey` (string, required): API key của user
-  - `orderId` (string, required): ID của đơn hàng (UUID)
-  - `reason` (string, required): Lý do huỷ đơn hàng
+  - `orderId` (string, required): Order ID (UUID)
+  - `reason` (string, required): Cancellation reason
 
 ## listReviews
-Liệt kê các đánh giá (reviews) của một sản phẩm. Phân trang bằng cursor.
+
+List reviews for a product. Cursor-based pagination.
+
+- **isUIRenderer:** true
 - **Parameters:**
-  - `apiKey` (string, required): API key của user
-  - `productId` (string, required): ID của sản phẩm (UUID)
-  - `limit` (number, optional): Số reviews trả về (mặc định 10)
-  - `cursor` (string, optional): Cursor để lấy trang tiếp theo
+  - `productId` (string, required): Product ID (UUID)
+  - `limit` (number, optional): Number of reviews to return (default 10)
+  - `cursor` (string, optional): Cursor for next page
 
 ## getMe
-Lấy thông tin tài khoản của user hiện tại (dựa trên API key). Trả về tên, email, số điện thoại, vai trò và user ID.
-- **Parameters:**
-  - `apiKey` (string, required): API key của user
+
+Get current user account information. Returns name, email, phone, role and user ID.
+
+- **Parameters:** None
 
 ## getCart
-Xem giỏ hàng hiện tại của user. Trả về danh sách sản phẩm, số lượng, giá và tổng tiền.
-- **Parameters:**
-  - `apiKey` (string, required): API key của user
+
+Get current user's shopping cart. Returns product list, quantities, prices and total.
+
+- **isUIRenderer:** true
+- **Parameters:** None
 
 ## addToCart
-Thêm một sản phẩm vào giỏ hàng. Nếu sản phẩm đã có trong giỏ, số lượng sẽ được cộng dồn.
+
+Add a product to the shopping cart. If the product already exists in cart, quantity will be incremented.
+
 - **Parameters:**
-  - `apiKey` (string, required): API key của user
-  - `productId` (string, required): ID của sản phẩm (UUID)
-  - `quantity` (number, optional): Số lượng thêm (mặc định 1)
+  - `productId` (string, required): Product ID (UUID)
+  - `quantity` (number, optional): Quantity to add (default 1)
 
 ## updateCartItem
-Cập nhật số lượng của một sản phẩm trong giỏ hàng.
+
+Update quantity of a product in the shopping cart.
+
 - **Parameters:**
-  - `apiKey` (string, required): API key của user
-  - `itemId` (string, required): ID của cart item (UUID, lấy từ getCart)
-  - `quantity` (number, required): Số lượng mới (tối thiểu 1)
+  - `itemId` (string, required): Cart item ID (UUID, get from getCart)
+  - `quantity` (number, required): New quantity (minimum 1)
 
 ## removeCartItem
-Xoá một sản phẩm khỏi giỏ hàng.
+
+Remove a product from the shopping cart.
+
 - **Parameters:**
-  - `apiKey` (string, required): API key của user
-  - `itemId` (string, required): ID của cart item (UUID, lấy từ getCart)
+  - `itemId` (string, required): Cart item ID (UUID, get from getCart)
+
+## renderUI
+
+Render a UI component in the chat. Used to display rich content like order details, cart, reviews, etc.
+
+- **isUIRenderer:** true
+- **Parameters:**
+  - `componentName` (string, required): Component to render. Valid values: `order-detail-chat-view`, `reviews-chat-view`, `cart-detail-chat-view`, `product-detail-chat-view`
+  - `props` (object, required): Props to pass to the component
