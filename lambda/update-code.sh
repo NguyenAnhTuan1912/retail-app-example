@@ -11,12 +11,11 @@ while [[ $# -gt 0 ]]; do
 done
 PROFILE="${PROFILE:-$AWS_PROFILE}"
 if [ -z "$PROFILE" ]; then
-  echo "❌ Usage: ./update-functions.sh --profile <aws-profile>  (or set AWS_PROFILE)"
+  echo "❌ Usage: ./update-code.sh --profile <aws-profile>  (or set AWS_PROFILE)"
   exit 1
 fi
 
 REGION="${AWS_REGION:-ap-southeast-1}"
-API_BASE_URL="${API_BASE_URL:?❌ Set API_BASE_URL env var}"
 
 FUNCTIONS=(
   "listProducts"
@@ -31,17 +30,28 @@ FUNCTIONS=(
   "addToCart"
   "updateCartItem"
   "removeCartItem"
+  "renderUI"
 )
 
-echo "🔄 Updating environment variables for all functions..."
-echo "   API_BASE_URL=$API_BASE_URL"
+cd "$(dirname "$0")"
+
+echo "🔧 Building..."
+pnpm build
+
+echo "📦 Packaging..."
+cd dist
+zip -qr ../lambda.zip .
+cd ..
+
+echo ""
+echo "🚀 Updating function code..."
 echo "─────────────────────────────────────"
 
 for FUNC in "${FUNCTIONS[@]}"; do
   FUNC_NAME="demo-retail-${FUNC}"
-  aws lambda update-function-configuration \
+  aws lambda update-function-code \
     --function-name "$FUNC_NAME" \
-    --environment "Variables={API_BASE_URL=$API_BASE_URL}" \
+    --zip-file fileb://lambda.zip \
     --profile "$PROFILE" \
     --region "$REGION" \
     --no-cli-pager > /dev/null 2>&1
