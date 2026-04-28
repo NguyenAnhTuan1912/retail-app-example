@@ -228,10 +228,14 @@ curl "http://localhost:19000/reviews?productId=<product-id>&limit=10" \
 cd lambda
 
 # Deploy toàn bộ Lambda functions
-API_BASE_URL="https://<backend-url>" ./deploy.sh --profile <aws-profile>
+API_BASE_URL="https://<backend-url>" API_KEY="<api-key>" ./deploy.sh --profile <aws-profile>
 
-# Update biến môi trường cho toàn bộ functions
-API_BASE_URL="https://<backend-url>" ./update-functions.sh --profile <aws-profile>
+# Update code
+./update-code.sh --profile <aws-profile>
+
+# Update biến môi trường (chỉ truyền những biến cần update)
+API_KEY="<api-key>" ./update-env.sh --profile <aws-profile>
+API_BASE_URL="https://<url>" API_KEY="<key>" ./update-env.sh --profile <aws-profile>
 ```
 
 > Xem mô tả chi tiết từng function trong `lambda/TOOLS.md`.
