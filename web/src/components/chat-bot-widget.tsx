@@ -1,6 +1,10 @@
 import { useState, useRef, useEffect } from "react";
 
+// Import core
 import { useMe } from "@/core/users/query";
+
+// Import components
+import { renderProductDetail } from "./chat-ui/product-detail-chat-view";
 
 export default function ChatBotWidget() {
   const [isECVBotScriptLoaded, setIsECVBotScriptLoaded] = useState(false);
@@ -34,19 +38,21 @@ export default function ChatBotWidget() {
     document.body.appendChild(script);
   }, [isECVBotScriptLoaded]);
 
-  // Mount ECVBot Popup Chat
+  // Mount ECVBot Popup Chat + register UI components
   useEffect(() => {
-    window.onload = function () {
-      if (typeof (window as any).ecvBot !== "undefined") {
-        const container = (window as any).ecvBot.createShadowRootContainer();
-        (window as any).ecvBot.initialize(container, {
-          botId: "3CyBfru3T2FmtX3KpJQoQrZHdjo",
-        });
-      } else {
-        console.error("window.ecvBot is not available!");
-      }
-    };
-  }, []);
+    if (!isECVBotScriptLoaded) return;
+    if (typeof (window as any).ecvBot === "undefined") return;
+
+    const container = (window as any).ecvBot.createShadowRootContainer();
+    (window as any).ecvBot.initialize(container, {
+      botId: "3CyBfru3T2FmtX3KpJQoQrZHdjo",
+    });
+
+    (window as any).ecvBot.chatUIRegistry.addDOMRenderer(
+      "demo_retail_get_product",
+      renderProductDetail,
+    );
+  }, [isECVBotScriptLoaded]);
 
   useEffect(() => {
     if (me && me.id) {
@@ -54,7 +60,5 @@ export default function ChatBotWidget() {
     }
   }, [me]);
 
-  return (
-    <div ref={ecvBotPopupShadowRootRef}></div>
-  );
+  return <div ref={ecvBotPopupShadowRootRef}></div>;
 }
