@@ -22,6 +22,7 @@ Search and list products. Supports keyword search, category and price filtering,
 
 Get detailed information of a product including description, price, rating, images, seller and category.
 
+- **isUIRenderer:** true
 - **Parameters:**
   - `productId` (string, required): Product ID (UUID)
 
