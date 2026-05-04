@@ -5,6 +5,9 @@ import { useMe } from "@/core/users/query";
 
 // Import components
 import { renderProductDetail } from "./chat-ui/product-detail-chat-view";
+import { renderOrderDetail } from "./chat-ui/order-detail-chat-view";
+import { renderReviews } from "./chat-ui/reviews-chat-view";
+import { renderCart } from "./chat-ui/cart-detail-chat-view";
 
 export default function ChatBotWidget() {
   const [isECVBotScriptLoaded, setIsECVBotScriptLoaded] = useState(false);
@@ -51,6 +54,18 @@ export default function ChatBotWidget() {
     (window as any).ecvBot.chatUIRegistry.addDOMRenderer(
       "demo_retail_get_product",
       renderProductDetail,
+    );
+    (window as any).ecvBot.chatUIRegistry.addDOMRenderer(
+      "demo_retail_get_order",
+      renderOrderDetail,
+    );
+    (window as any).ecvBot.chatUIRegistry.addDOMRenderer(
+      "demo_retail_list_reviews",
+      renderReviews,
+    );
+    (window as any).ecvBot.chatUIRegistry.addDOMRenderer(
+      "demo_retail_get_cart",
+      renderCart,
     );
   }, [isECVBotScriptLoaded]);
 

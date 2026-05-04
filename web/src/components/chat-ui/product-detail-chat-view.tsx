@@ -1,9 +1,6 @@
-import { createRoot } from "react-dom/client";
 import { useState } from "react";
 import { formatPrice, renderStars } from "@/utils";
-
-// Tailwind CSS compiled for chat-ui components, injected into Shadow DOM
-import chatUiCss from "@/styles/chat-ui.css?inline";
+import { renderToDOM } from "./shared";
 
 type ProductDetailData = {
   id: string;
@@ -73,17 +70,5 @@ function ProductDetailCard({ data }: { data: ProductDetailData }) {
 }
 
 export function renderProductDetail(data: ProductDetailData): HTMLElement {
-  const container = document.createElement("div");
-
-  // Inject Tailwind CSS into bot's Shadow DOM (once)
-  const shadowRoot = document.querySelector("#ecv-bot-iframe-root")?.shadowRoot;
-  if (shadowRoot && !shadowRoot.querySelector("[data-chat-ui-css]")) {
-    const style = document.createElement("style");
-    style.setAttribute("data-chat-ui-css", "");
-    style.textContent = chatUiCss;
-    shadowRoot.appendChild(style);
-  }
-
-  createRoot(container).render(<ProductDetailCard data={data} />);
-  return container;
+  return renderToDOM(<ProductDetailCard data={data} />);
 }
