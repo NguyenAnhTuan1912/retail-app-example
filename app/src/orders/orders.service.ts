@@ -15,7 +15,7 @@ export class OrdersService {
 
     const where: any = {
       buyerId: userId,
-      createdAt: { gte: dateFrom, lte: dateTo },
+      // createdAt: { gte: dateFrom, lte: dateTo },
     };
 
     if (search) {
